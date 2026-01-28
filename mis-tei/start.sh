@@ -1,16 +1,16 @@
 #!/bin/bash
 # Copyright © Huawei Technologies Co., Ltd. 2024. All rights reserved.
 
-if [[ "$#" -ne 3 ]]; then
-    echo "Need param: <model_id> <listen_ip> <listen_port>"
+if [[ "$#" -ne 4 ]]; then
+    echo "Need param: <model_id> <listen_ip> <listen_port> <served_model_name>"
     exit 1
 fi
 
 MODEL_ID=$1
 LISTEN_IP=$2
 LISTEN_PORT=$3
-MODEL_DIR=$4
-SERVED_MODEL_NAME=$5
+#MODEL_DIR=$4
+SERVED_MODEL_NAME=$4
 MODEL_NAME=$(echo ${MODEL_ID} | cut -d'/' -f2)
 MODEL_MEMORY_LIMIT=2048
 SUPPORT_MODELS=("BAAI/bge-large-zh-v1.5")
@@ -39,11 +39,11 @@ function check_model_support() {
 }
 
 function check_model_exists() {
-    if [[ ! -e "${MODEL_DIR}/${MODEL_ID##*/}/config.json" ]]; then
-        echo "Model '${MODEL_DIR}/${MODEL_ID##*/}' does not exist."
+    if [[ ! -e "${MODEL_ID}/config.json" ]]; then
+        echo "Model '${MODEL_ID}' does not exist."
         return 1
     else
-        echo "Model '${MODEL_DIR}/${MODEL_ID##*/}' exists."
+        echo "Model '${MODEL_ID}' exists."
         return 0
     fi
 }
@@ -75,7 +75,7 @@ function start_tei_service() {
     fi
     echo "Starting TEI service on ${LISTEN_IP}:${LISTEN_PORT}..."
     text-embeddings-router \
-      --model-id "${MODEL_DIR}/${MODEL_ID##*/}" \
+      --model-id "${MODEL_ID}" \
       --port "${LISTEN_PORT}" \
       --hostname "${LISTEN_IP}" \
       --served-model-name "{$SERVED_MODEL_NAME}"
@@ -123,10 +123,11 @@ function main() {
     fi
 !
     if ! check_model_exists; then
-        if ! download_model; then
-            echo "Download model ${MODEL_ID} failed"
-            exit 1
-        fi
+        #if ! download_model; then
+        #    echo "Download model ${MODEL_ID} failed"
+        #    exit 1
+        #fi
+        echo "check ${MODEL_ID} failed"
     fi
 
     start_tei_service
